@@ -155,8 +155,8 @@ app.post('/users', jsonParser, function(req, res) {
 // authenticate() call indicates we want BA and don't want to store a session cookie to keep identifying the user
 // will need to re-auth with every new API request
 app.get('/hidden', passport.authenticate('basic', {session: false}), function(req, res) {
-    res.json({
-        message: 'Special secret message available only to users!'
+    return res.json({
+        message: 'Luke, I am your father'
     });
 });
 
