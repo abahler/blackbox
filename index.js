@@ -64,25 +64,6 @@ app.post('/users', jsonParser, function(req, res) {
         });
     }
     
-    /*
-    // User creation with unhashed, unsalted password
-    var user = new User({
-        username: username,
-        password: password
-    });
-    
-    user.save(function(err) {
-        if (err) {
-            return res.status(500).json({
-                message: 'Internal server error'
-            });
-        }
-        
-        // implied else
-        return res.status(201).json({});
-    });
-    */
-    
     // 10 is how many rounds of salting algorithm should be used. 
     // 10-12 is a good balance between security benefits and performance losses.
     bcrypt.genSalt(10, function(err, salt) {
