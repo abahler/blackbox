@@ -8,7 +8,7 @@ var User = require('./user-model'); // Don't need the .js extension
 
 // Add a password validation method to your User schema
 // TIM: Course lesson said to use `UserSchema.methods` but UserSchema wasn't exported in the model.
-User.methods.validatePassword = function(suppliedPassword, callback) {
+User.prototype.validatePassword = function(suppliedPassword, callback) {
     // Actual comparison is hidden from us within bcrypt.compare()
     bcrypt.compare(suppliedPassword, this.password, function(err, isValid) {
         if (err) {
