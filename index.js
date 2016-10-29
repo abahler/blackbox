@@ -6,9 +6,62 @@ var bcrypt = require('bcryptjs');
 // Note that the model is capitalized, but the individual object created in the POST route is lowercase
 var User = require('./user-model'); // Don't need the .js extension
 
+// Add a password validation method to your User schema
+// TIM: Course lesson said to use `UserSchema.methods` but UserSchema wasn't exported in the model.
+User.methods.validatePassword = function(suppliedPassword, callback) {
+    // Actual comparison is hidden from us within bcrypt.compare()
+    bcrypt.compare(suppliedPassword, this.password, function(err, isValid) {
+        if (err) {
+            callback(err);
+            return false;
+        } else {
+            callback(isValid);
+        }
+    });
+};
+
+// Set up Passport strategy
+var passport = require('passport');
+var BasicStrategy = require('passport-http').BasicStrategy;
+
+var strategy = new BasicStrategy(function(username, password, callback) {
+    User.findOne({
+        username: username
+    }, function (err, user) {
+        if (err) {  // Could not verify username
+            callback(err);
+            return;
+        }
+
+        if (!user) {    // Could verify username, and it's wrong
+            return callback(null, false, {
+                message: 'Incorrect username.'
+            });
+        }
+
+        user.validatePassword(password, function(err, isValid) {
+            if (err) {  // Could not validate password
+                return callback(err);
+            }
+
+            if (!isValid) {
+                // Could validate password, and it's wrong
+                return callback(null, false, {
+                    message: 'Incorrect password.'
+                });
+            }
+            return callback(null, user);
+        }); // end validatePassword()
+        
+    }); // end findOne()
+});
+
+passport.use(strategy);
+
 var jsonParser = bodyParser.json();
 
 var app = express();
+app.use(passport.initialize()); // Integrate Passport with the Express app
 
 // Create a POST route
 app.post('/users', jsonParser, function(req, res) {
@@ -97,6 +150,14 @@ app.post('/users', jsonParser, function(req, res) {
         }); // end hash()
     }); // end genSalt
     
+});
+
+// authenticate() call indicates we want BA and don't want to store a session cookie to keep identifying the user
+// will need to re-auth with every new API request
+app.get('/hidden', passport.authenticate('basic', {session: false}), function(req, res) {
+    res.json({
+        message: 'Special secret message available only to users!'
+    });
 });
 
 // Use promise instead of callback
