@@ -6,20 +6,6 @@ var bcrypt = require('bcryptjs');
 // Note that the model is capitalized, but the individual object created in the POST route is lowercase
 var User = require('./user-model'); // Don't need the .js extension
 
-// Add a password validation method to your User schema
-// TIM: Course lesson said to use `UserSchema.methods` but UserSchema wasn't exported in the model.
-User.prototype.validatePassword = function(suppliedPassword, callback) {
-    // Actual comparison is hidden from us within bcrypt.compare()
-    bcrypt.compare(suppliedPassword, this.password, function(err, isValid) {
-        if (err) {
-            callback(err);
-            return false;
-        } else {
-            callback(isValid);
-        }
-    });
-};
-
 // Set up Passport strategy
 var passport = require('passport');
 var BasicStrategy = require('passport-http').BasicStrategy;
